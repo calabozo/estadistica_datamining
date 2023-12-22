@@ -1,0 +1,491 @@
+---
+title: "Bayes: MLE y MAP"
+format: html
+editor: visual
+---
+
+# Máxima verosimilitud (MLE)
+
+La Máxima verosimilitud (Maximum likelihood estimation) es un método
+para estimar los parámetros de un modelo estadístico dadas ciertas
+observaciones del modelo.
+
+### Ejemplo
+
+Imagínate que tienes una báscula poco precisa y la utilizas para medir
+el peso de un periquito adulto. Te salen 3 medidas: 50g, 42g, 47g.
+
+![](pics/pollo.jpg)
+
+¿Cual es la media? Si suponemos que la media son 40g y la desviación
+típica 10g tendríamos la siguiente gráfica, ¿cual sería la probabilidad
+de obtener esas medidas?
+
+```{r}
+library(ggplot2)
+weights<-c(50,42,47)
+
+options(repr.plot.height=4,repr.plot.width=6)
+xdf<-data.frame(z=c(0,70))
+ggplot(xdf,aes(x=z))+stat_function(fun=dnorm,args = list(mean = 40, sd =10))+
+  geom_vline(xintercept = weights[1],color="blue")+
+  geom_vline(xintercept = weights[2],color="blue")+
+  geom_vline(xintercept = weights[3],color="blue")+
+  ylab("probabilidad")+xlab("Peso [g]")+
+  theme_linedraw()
+```
+
+La probabilidad a posteriori condicionada a una gaussiana de media
+$\mu=40$ y desviación típida $\sigma=10$ se calcula como: $$
+\begin{split}
+    P(X \mid \theta) &= P(X \mid \mu,\sigma)  = \prod_{i=1}^N P(x_i \mid \mu,\sigma) \\ 
+    P(X \mid \mu,\sigma) &= \prod_{i=1}^N \frac {1}{\sqrt {2\pi \sigma ^{2}}}\;e^{-{\frac {(x_i-\mu )^{2}}{2\sigma ^{2}}}}
+\end{split}
+$$
+
+```{r}
+mnkg=40
+sdkg=10
+prob<-dnorm(weights[1],mean=mnkg,sd=sdkg)*
+      dnorm(weights[2],mean=mnkg,sd=sdkg)*
+      dnorm(weights[3],mean=mnkg,sd=sdkg)
+paste0("La probabilidad es: P(X|",mnkg,",",sdkg,")=",round(prob,10))
+```
+
+¿Qué ocurriría si tuvieramos una gaussiana de media 36? ¿cual sería la
+probabilidad?
+
+```{r}
+mnkg=36
+sdkg=10
+prob<-dnorm(weights[1],mean=mnkg,sd=sdkg)*
+      dnorm(weights[2],mean=mnkg,sd=sdkg)*
+      dnorm(weights[3],mean=mnkg,sd=sdkg)
+paste0("La probabilidad es: P(X|",mnkg,",",sdkg,")=",round(prob,10))
+```
+
+¿Cual es el valor óptimo de $\theta=\{\mu,\sigma\}$ que maximiza la
+probabilidad?
+
+La probabilidad para el vector $X$ de $n$ observaciones viene dada por:
+$$
+\mathcal {L}(\theta)=P(X_1=x_1,X_2=x_2,\ldots,X_n=x_n)=f(x_1;\theta)\cdot f(x_2;\theta)\cdots f(x_n;\theta)=\prod\limits_{i=1}^n f(x_i;\theta)
+$$
+
+Es el estimador de máxima verosimilitud, que se calcula como: $$
+\hat {\theta }\in \{{\underset {\theta \in \Theta }{\operatorname {arg\,max} }}\ {\mathcal {L}}(\theta \,;x)\}
+$$
+
+Maximizar $\mathcal {L}$ equivale a maximizar su logaritmo. Muchas veces
+es mejor trabajar con logaritmos, sobretodo con funciones de
+probabilidad basadas en exponenciales: $$
+{\displaystyle \ell (\theta \,;x)=\ln {\mathcal {L}}(\theta \,;x),}
+$$
+
+Su máximo se puede obtener derivando respecto a $\theta$ e igualando a
+cero:
+
+$$
+ \frac {\partial }{\partial \theta }\ln {\Big (}{\mathcal {L}}(\theta ){\Big )}=0
+$$
+
+#### Ejemplo MLE de gaussiana:
+
+La función de distribución es: $$
+f(x\mid \mu ,\sigma )={\frac {1}{{\sqrt {2\pi \sigma ^{2}}}\ }}\exp {\left(-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}\right)},
+$$
+
+La probabilidad de de tener una muestra de $n$ muestras independientes
+identicamente distribuidas de forma aleatoria es: $$
+\mathcal {L}(\theta)=\mathcal {L}(\mu ,\sigma ) =f(x_{1},\ldots ,x_{n}\mid \mu ,\sigma ^{2})=\prod _{i=1}^{n}f(x_{i}\mid \mu ,\sigma ^{2})=\left({\frac {1}{2\pi \sigma ^{2}}}\right)^{n/2}\exp \left(-{\frac {\sum _{i=1}^{n}(x_{i}-\mu )^{2}}{2\sigma ^{2}}}\right),
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\ln {\Big (}{\mathcal {L}}(\mu ,\sigma ){\Big )}=-{\frac {\,n\,}{2}}\ln(2\pi \sigma ^{2})-{\frac {1}{2\sigma ^{2}}}\sum _{i=1}^{n}(\,x_{i}-\mu \,)^{2}
+$$
+
+Calculamos el estimador de máxima verosimilitud para la media: $$
+{\begin{aligned}0&={\frac {\partial }{\partial \mu }}\log {\Big (}{\mathcal {L}}(\mu ,\sigma ){\Big )}=0-{\frac {\;-2\!n({\bar {x}}-\mu )\;}{2\sigma ^{2}}}.\end{aligned}}
+$$ El resultado es: $$
+{\hat {\mu }}={\bar {x}}=\sum _{i=1}^{n}{\frac {\,x_{i}\,}{n}}
+$$ Si repetimos el proceso para la desviación típica obtendríamos: $$
+\widehat {\sigma }^{2}={\frac {1}{n}}\sum _{i=1}^{n}(x_{i}-\mu )^{2}
+$$ **AVISO**: El MLE no nos devuelve el estimador sesgado de la varianza
+porque $\mu \neq \hat {\mu }$. Si en la equación de
+$\widehat {\sigma }^{2}$ metemos la de $\hat {\mu }$. Obtenemos: $$
+\operatorname {E} {\big [}\;{\widehat {\sigma }}^{2}\;{\big ]}={\frac {\,n-1\,}{n}}\sigma ^{2}.
+$$
+
+```{r}
+weights
+```
+
+```{r}
+sapply(weights,function(xi) dnorm(xi,mean=mnkg,sd=sdkg))
+```
+
+```{r}
+#mnkg=36
+#sdkg=10
+
+l<-function(theta){
+    mnkg=theta[1]
+    sdkg=theta[2]
+    -prod(sapply(weights,function(xi) dnorm(xi,mean=mnkg,sd=sdkg)))
+}
+                
+o<-optim(c(50,10), l)
+                
+paste("La media óptima calculada mediante MLE es:",o$par[1])
+paste("La media estimada es:",mean(weights))
+                 
+paste("La desviación típica óptima calculada mediante MLE es:",o$par[2])
+paste("La desviación típica estimada es:",sd(weights))                 
+o                 
+```
+
+#### Ejemplo MLE de bernoulli:
+
+La formula de la distribución de probabilidad de una Bernuilli es: $$
+f(k;p)=p^k(1-p)^{1-k}
+$$
+
+La probabilidad de de tener una muestra de $n$ muestras independientes
+identicamente distribuidas de forma aleatoria es: $$
+\mathcal {L}(\theta)=\mathcal {L}(p ) =f(x_{1},\ldots ,x_{n}\mid \mu ,\sigma ^{2})=\prod _{i=1}^{n}f(x_{i}\mid \mu ,\sigma ^{2})=p^{\sum x_i} (1-p)^{n-\sum x_i}
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\ln {\Big (}{\mathcal {L}}(p ){\Big )}=\Big(\sum x_i\Big)\ln(p)+\Big(n-\sum x_i\Big)\ln(1-p)
+$$
+
+Calculamos el estimador de máxima verosimilitud para calcular $p$: $$
+0={\frac {\partial }{\partial p }}\log {\Big (}{\mathcal {L}}(p ){\Big )}=\frac{\Big(\sum x_i\Big)}{p}+\frac{\Big(n-\sum x_i\Big)}{(1-p)}
+$$ El resultado es: $$
+{\hat {p }}=\sum _{i=1}^{n}{\frac {\,x_{i}\,}{n}}
+$$
+
+```{r}
+X<-rbinom(50,size=1,p=0.3)
+
+l<-function(p){
+    -prod(sapply(X,function(xi) p^xi*(1-p)^(1-xi)))
+}
+                
+o<-optimize(l,c(0,1))
+                
+paste("La media óptima calculada mediante MLE es:",o$minimum)
+paste("La media estimada es:",mean(X))
+                 
+o
+```
+
+# Maximum a Posteriori (MAP) e inferencia Bayesiana
+
+Imaginemos que tenemos información adicional, como por ejemplo la
+siguiente tabla de la
+[Wikipedia](https://en.wikipedia.org/wiki/Budgerigar):
+
+```         
+Wild budgerigars average 18 cm (7 in) long, weigh 30–40 grams (1.1–1.4 oz), 30 cm (12 in) in wingspan, and display a light green body colour (abdomen and rumps), while their mantles (back and wing coverts) display pitch-black mantle markings (blackish in fledgelings and immatures) edged in clear yellow undulations. 
+```
+
+Ahí vemos que el peso medio de los periquitos adultos es de unos 35g.
+
+¿Cómo podemos saber la varianza?
+
+Suponemos que el margen de 30-40 gramos corresponde con el intervalo de
+confianza del 80%.
+
+```{r}
+calc_sd<-function(x,p,weight){    
+    (qnorm(p,mean=35,sd=x)-weight)^2
+}
+o<-optimize(calc_sd,c(0,10),p=0.9,weight=40)
+paste("La desviación típica calculada con el percentil 90 es:",o$minimum)
+
+o<-optimize(calc_sd,c(0,10),p=0.1,weight=30)
+paste("La desviación típica calculada con el percentil 10 es:",o$minimum)
+```
+
+```{r}
+library(ggplot2)
+
+sd_est <- 3.901
+
+loth<-qnorm(0.1,lower.tail = T, mean=35, sd=sd_est)
+upth<-qnorm(0.1,lower.tail = F, mean=35, sd=sd_est)
+
+paste("El margen que nos interesa está en el rango: [",
+      round(loth,2),",",round(upth,2),"]")
+
+
+qsd009<-function(x){    
+    out<-dnorm(x, mean=35, sd=sd_est)    
+    out[x<loth  | x>upth  ]<-NA
+    out
+}
+
+options(repr.plot.height=4,repr.plot.width=6)
+xdf<-data.frame(z=c(20,50))
+ggplot(xdf,aes(x=z))+stat_function(fun=dnorm, args=list("mean"=35,"sd"=sd_est))+
+  stat_function(fun=qsd009, geom="area",fill="red", alpha=0.5)+
+  geom_text(x=44,y=0.047,size=4,label=paste0("n_cdf(",round(upth,2),")=0.9"))+
+  geom_text(x=26,y=0.047,size=4,label=paste0("n_cdf(",round(loth,2),")=0.1"))+
+  theme_linedraw()
+options(repr.plot.height=7,repr.plot.width=7)
+```
+
+Para redondear, supongamos que el conocimiento que tenemos a priori es
+que los periquitos tienen un peso medio de 35g con una desviación típica
+de casi 4g.
+
+Acorde con Bayes, si tenemos información previa (el prior) podemos
+calcular la probabilidad a posteriori como: $$
+P(\theta|X)=\frac{P(X|\theta)·P_{apriori}(\theta)}{P(X)}
+$$
+
+Donde $X$ son los datos que tenemos y $\theta$ son los parámetros que
+estimamos.
+
+Dados los pesos que hemos medido, ¿cual es la probabilidad de que sigan
+una gaussiana de media 35 y desviación 4?
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+xdf<-data.frame(z=c(20,60))
+ggplot(xdf,aes(x=z))+stat_function(fun=dnorm,args = list(mean = 35, sd =4))+
+  geom_vline(xintercept = weights[1],color="blue")+
+  geom_vline(xintercept = weights[2],color="blue")+
+  geom_vline(xintercept = weights[3],color="blue")+
+  stat_function(fun=dnorm,args = list(mean = mean(weights), sd =sd(weights)),color='gray')+
+  ylab("probabilidad")+xlab("Peso [kg]")+
+  theme_linedraw()
+```
+
+```{r}
+for (w in weights){
+    print(paste("La densidad de probabilidad de que pese",w,"es",dnorm(w,mean=35,sd=4)))
+}
+```
+
+Como vemos, la probabilidad de haber realizado una medida de 6kg es
+bastante baja. Es posible que se trate de un outlayer, un valor atípico,
+producto de un error en la medida.
+
+Si seguimos adelante con el teorema de Bayes, lo que nos interesa es
+obtener el máximo a posteriori, maximizar $P(\theta|X)$
+
+$$
+\hat {\theta }\in \{{\underset {\theta \in \Theta }{\operatorname {arg\,max} }} P(\theta|X)\} =\hat {\theta }\in \{{\underset {\theta \in \Theta }{\operatorname {arg\,max} }} \frac{P(X|\theta)·P_{apriori}(\theta)}{P(X)}\}
+$$
+
+Lo cual equivale a: $$
+\hat {\theta }\in \{{\underset {\theta \in \Theta }{\operatorname {arg\,max} }} P(\theta|X) \}=\{ {\operatorname {arg\,max} }P(X|\theta)·P_{apriori}(\theta)\}
+$$
+
+Suponemos que la desviación típica es la misma que la que hemos medido,
+pero desconocemos la media, el valor más probable del peso. Lo que se
+denomina el Máximo a Posteriori (MAP):
+
+```{r}
+newl<-function(theta){
+    mnkg=theta[1]    
+    mnkg_apriori=35
+    sdkg_apriori=4
+    -prod(sapply(weights,function(xi) (dnorm(xi,mean=mnkg,sd=sd(weights)))))*
+                                       dnorm(mnkg,mean=mnkg_apriori,sd=sdkg_apriori)
+}                
+                 
+o<-optim(c(35), newl, method ="Brent",lower = 10, upper = 60,)
+
+paste("La media óptima calculada mediante MAP es:",o$par)
+paste("La media estimada es:",mean(weights))                 
+```
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+xdf<-data.frame(z=c(20,60))
+ggplot(xdf,aes(x=z))+stat_function(fun=dnorm,args = list(mean = 35, sd =4))+
+  geom_vline(xintercept = weights[1],color="blue")+
+  geom_vline(xintercept = weights[2],color="blue")+
+  geom_vline(xintercept = weights[3],color="blue")+
+  stat_function(fun=dnorm,args = list(mean = mean(weights), sd =sd(weights)),color='gray')+
+  stat_function(fun=dnorm,args = list(mean = o$par, sd =sd(weights)),color='red')+
+  geom_vline(xintercept = o$par,color="red")+
+  ylab("probabilidad")+xlab("Peso [kg]")+
+  theme_linedraw()
+```
+
+```{r}
+max_weight<-40
+prb<-pnorm(max_weight,mean = o$par, sd =sd(weights),lower.tail=FALSE)
+paste("La probabilidad de que pese más de ",max_weight,'g es del ',round(prb*100),'%',sep='')
+```
+
+![Alt Text](https://media.giphy.com/media/ceHKRKMR6Ojao/giphy.gif)
+
+#### Bayesianos vs Frecuentistas
+
+De obligada referencia: https://xkcd.com/1132/
+
+El MLE es igual al MAP cuando el prior es completamente desconocido, es
+decir, cuando es una uniforme.
+
+Características de aproximación Bayesiana:
+
+-   La mayor parte de las veces sabemos como debería ser nuestra
+    distribución.
+
+-   Elegir mal el Prior puede tener consecuencias catastróficas.
+
+-   Podemos obtener mejores resultados con menos muestras.
+
+Características de aproximación Frecuentista:
+
+-   No necesitamos hacer ninguna suposición de los datos con lo que
+    podemos evitar sesgos basados en prejuicios.
+
+# Test A/B con Bayes
+
+Recordemos el teorema de Bayes $$
+P(\theta|X)=\frac{P(X|\theta)·P_{apriori}(\theta)}{P(X)}
+$$
+
+Donde $X$ son los datos que tenemos y $\theta$ son los parámetros que
+estimamos.
+
+En el caso de test A/B donde tratamos de ver la tasa de conversión
+(conversion rate) de dos grupos uno A y otro B. Como estamos mirando si
+hay o no conversión esto se traduce en una distribución de Bernoulli. La
+distribución que tenemos es: $$
+P(X|\theta)=\theta^{X=1}·(1-\theta)^{1-X=1}
+$$ Donde $\theta$ es el ratio de usuarios que se han convertido (que han
+comprado un producto) vs el total de usuarios: $\theta=\frac{n_s}{n_t}$.
+
+Al tener una función de distribución $P(X|\theta)$, el prior,
+$P_{apriori}(\theta)$ ha de ser una función Beta, para que $P(\theta|X)$
+también sea una función Beta y se cumple la siguiente propiedad: $$
+Beta(\alpha,\beta) · Bernoulli \left(\theta=\frac{a}{a+b}\right) = Beta(\alpha + a,\beta+b)
+$$
+
+Recordemos que en una función Beta los estimadoes son:
+
+Estimadores **media** ($\mu$) y **varianza** ($\sigma^2$): $$
+\mu= \frac{\alpha}{\alpha + \beta} \qquad
+\sigma^2= \frac{\alpha \beta}{(\alpha+\beta)^2(\alpha+\beta+1)}
+$$ La moda sería: $$
+moda = \frac{\alpha-1}{\alpha + \beta -2}
+$$
+
+Datos sacados de:
+https://www.gamasutra.com/blogs/ViktorGregor/20181105/328404/Its_time_to_rethink_AB_testing.php#comments
+
+## Ejemplo
+
+```{r}
+na_t <- 1000
+na_s <- 197
+nb_t <- 1000
+nb_s <- 230
+m <- matrix(c(na_s,na_t,nb_s,nb_t), byrow = T,nrow = 2,
+            dimnames=list(c("control","nuevo"),c("exitos","intentos")))
+m
+```
+
+## Versión frecuentista
+
+Porcentaje de la media de conversión de cada grupo:
+
+```{r}
+pa_margin <- round(binom.test(na_s,na_t)$conf.int,3)
+pb_margin <- round(binom.test(nb_s,nb_t)$conf.int,3)
+
+matrix(c(pa_margin,pb_margin)*100,nrow=2,dimnames=list(c("control","nuevo"),c("5%","95%")), byrow = T)
+```
+
+Margen de confianza del del 95%:
+
+```{r}
+chisq.test(m)
+```
+
+```{r}
+fisher.test(m)
+```
+
+## Versión Bayesiana
+
+```{r}
+prior_a <- 2
+prior_b <- 8
+
+x <- seq(0,1,by=0.01)
+p <- dbeta(x,prior_a,prior_b)
+plot(x, p,t="l")
+```
+
+```{r}
+#La media sería
+sum(x*p)*(x[2]-x[1])
+```
+
+```{r}
+library(ggplot2)
+x <- seq(0,0.3, by = 0.001)
+
+p1 <- dbeta(x,prior_a+na_s,prior_b+(na_t-na_s))
+p2 <- dbeta(x,prior_b+nb_s,prior_b+(nb_t-nb_s))
+
+df<-data.frame(x=x*100,prob=c(p1,p2),name=c(rep("control",length(x)),rep("nuevo",length(x))))
+ggplot(data=df,aes(x=x,y=prob,color=name))+geom_line()+xlim(16,30)
+```
+
+Porcentaje de la media de conversión de cada grupo:
+
+```{r}
+cr_a <- sum(x*p1)*(x[2]-x[1])
+cr_b <- sum(x*p2)*(x[2]-x[1])          
+matrix(c(cr_a,cr_b)*100,nrow=1,dimnames=list(c("conversión"),c("control","nuevo")))
+```
+
+Margen de confianza del del 95%:
+
+```{r}
+pa_margin <- qbeta(c(0.025,0.0975),prior_a+na_s,prior_b+(na_t-na_s))
+pb_margin <- qbeta(c(0.025,0.0975),prior_b+nb_s,prior_b+(nb_t-nb_s))
+
+matrix(c(pa_margin,pb_margin)*100,nrow=2,dimnames=list(c("control","nuevo"),c("5%","95%")) , byrow=T)
+```
+
+Vamos a simular por montercarlo la diferencia entre los dos grupos:
+
+```{r}
+N <- 1000000
+r1 <- rbeta(N,prior_a+na_s,prior_b+(na_t-na_s))
+r2 <- rbeta(N,prior_a+nb_s,prior_b+(nb_t-nb_s))
+diff_df<-data.frame(x=(r2-r1))
+ggplot(data=diff_df,aes(x*100))+geom_density(color="blue")+geom_vline(xintercept =0)
+```
+
+La probabilidad de que mejore la **nueva** web es de:
+
+```{r}
+round(sum(diff_df$x>0)/nrow(diff_df),3)*100
+```
+
+La mejora esperada si la *nueva* es realmente mejor
+
+```{r}
+mean(diff_df$x[diff_df$x>0])*100
+```
+
+La empeora esperada si la **nueva** es realmente peor es
+
+```{r}
+mean(diff_df$x[diff_df$x<=0])*100
+```
+
+## Bayes aplicado a StarWars
+
+https://www.countbayesie.com/blog/2015/2/18/hans-solo-and-bayesian-priors

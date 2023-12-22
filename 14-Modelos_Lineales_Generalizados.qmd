@@ -1,0 +1,1224 @@
+---
+format: html
+editor: 
+  markdown: 
+    wrap: 80
+---
+
+# Modelo lineal generalizado
+
+La regresión lineal tradicional buscamos resolver la ecuación:
+
+$$
+\hat{Y}=X \hat{\beta}
+$$
+
+Encontrando el valor de $\hat{\beta}$ que mejor encaja con las muestras
+observadas.
+
+En una regresión lineal hacemos las siguientes suposiciones:
+
+1.  Que la relación entre las variables sea lineal.
+2.  Que los errores en la medición de $X_k$ sean independientes entre sí.
+3.  Que los errores sigan una distribución normal de media 0 y varianza
+    constante
+
+### Distribución Gausiana
+
+Es el modelo que hemos estado viendo hasta ahora. Su función de densidad de
+probabilidad es: $$
+P(y\;|\;\mu ,\sigma )={\frac {1}{\sqrt {2\pi \sigma ^{2}}}}\;e^{-{\frac {(y-\mu )^{2}}{2\sigma ^{2}}}}
+$$
+
+Trataremos de encontrar una función tal que: $$
+\mu=\hat{y}=\beta·x
+$$ manteniendo siempre la varianza $\sigma^2$ constante.
+
+#### Interpretación de los coeficientes
+
+$$
+\hat y=\beta_0+\beta_1 · x_1+\beta_2 · x_2...
+$$
+
+#### Estimador máxima verosimilitud
+
+Se tratará de modificar los valores de $\beta$ para que la siguiente función sea
+máxima: $$
+MLE=\mathcal {L}(\beta)=p(y_1,....y_n| x_1,....,x_n;\beta)=\prod_{i=1}^n {\frac { exp(-(y_i-\mu )^{2}/(2\sigma ^2) )}{\sqrt {2\pi \sigma ^{2}}}}=\prod_{i=1}^n {\frac { exp(-(y_i-x_i·\beta )^{2}/(2\sigma ^2) )}{\sqrt {2\pi \sigma ^{2}}}}
+$$ $$
+\mathcal {L}(\beta)=\left({\frac {1}{2\pi \sigma ^{2}}}\right)^{n/2}\exp \left(-{\frac {\sum _{i=1}^{n}(y_{i}-x_i·\beta )^{2}}{2\sigma ^{2}}}\right),
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\ln {\Big (}{\mathcal {L}}(\beta ){\Big )}=-{\frac {\,n\,}{2}}\ln(2\pi \sigma ^{2})-{\frac {1}{2\sigma ^{2}}}\sum _{i=1}^{n}(\,y_{i}-x_i·\beta \,)^{2}
+$$
+
+Si suponemos que la **varianza es constante** (no depende de $x_i$), maximizar
+el estimador de máxima verosimilitud (MLE o $\mathcal {L}$ ) es equivalente a
+minimizar la suma de residuos al cuadrado (RSS): $$
+RSS=\sum _{i=1}^{n}(\,y_{i}-x_i·\beta \,)^{2}
+$$ Recordemos que el error cuadrádico medio (MSE) sería: $$
+MSE=\frac{RSS}{n}
+$$
+
+```{r}
+set.seed(123)
+x<-rep(c(-10,-5,-1,2,5,10),10)
+y<-sapply(x,function(xi) rnorm(1,mean=xi*5+3,sd=10))
+df<-data.frame(y,x)
+```
+
+```{r}
+model<-glm(data=df,formula=y~x,family=gaussian())
+summary(model)
+```
+
+```{r}
+x_lin<-seq(-10,10,length.out = 20)
+y_est<-model$coefficient[1]+model$coefficient[2]*x_lin
+y_real<-5*x_lin+3
+
+
+plot(x_lin,y_real,t='l')
+lines(x_lin,y_est,col="red")
+```
+
+```{r}
+df$pred_lin  <-x*model$coefficients[2]+model$coefficients[1]
+df$pred_model<-predict(model,df)
+```
+
+```{r}
+head(df)
+```
+
+### AIC
+
+El criterio de información de Akaike (AIC) es un estimador de la calidad
+relativa del modelo que tiene en cuenta su complejidad.
+
+A medida que se aumenta el número de parámetros de entrada o de grados de un
+polinomio el valor de $R^2$ va a ser mejor porque el error cuadrático medio
+disminuye. El AIC penaliza los modelos complejos en favor del los sencillos para
+evitar el sobreajuste.
+
+Se calcula a partir del log-likelihood, el logaritmo del estimador de máxima
+verosimilitud:
+
+$$
+AIC = 2·P-2·ln\left( \mathcal {L} \right)
+$$
+
+En el caso de una regresión lineal: $$
+\ln {\Big (}{\mathcal {L}}(\beta ){\Big )}=-{\frac {\,n\,}{2}}\ln(2\pi \sigma ^{2})-{\frac {1}{2\sigma ^{2}}}\sum _{i=1}^{n}(\,y_{i}-x_i·\beta \,)^{2}
+$$ Una vez que el modelo está entrenado, resulta que: $$
+\sigma ^{2} = MSE = \frac{1}{n} \sum _{i=1}^{n}(\,y_{i}-x_i·\beta· \,)^{2}=n·RSS
+$$
+
+$$
+\ln {\Big (}{\mathcal {L}}(\beta ){\Big )}=-{\frac {\,n\,}{2}}\ln \left( 2\pi \frac{RSS}{n} \right)-{\frac {n}{2·RSS}}·RSS
+$$ Si sustituimos en la ecuación de AIC: $$
+AIC = 2·P+2·{\frac {\,n\,}{2}}\ln \left( 2\pi \frac{RSS}{n} \right)-{\frac {n}{2}}=2·P+n·\ln \left(\frac{RSS}{n} \right)-{\frac {n}{2}}+n·\ln(2\pi)
+$$ $$
+AIC = 2·P+n·\ln \left(\frac{RSS}{n} \right)+C
+$$ Como el valor de AIC realmente solo se utiliza para comparar un modelo con
+otro, el termino constante C se puede ignorar porque no cambia entre los
+modelos. $$
+AIC = 2·P+n·\ln \left(\frac{RSS}{n} \right)
+$$ El valor P es el número de coeficientes del modelo más 1. Y el AIC suele
+multiplicar P por 2, pero otros valores son posibles en función del a
+importancia que queramos dar a los parámetros extra.
+
+```{r}
+k_val=2
+AIC(model,k=k_val)
+```
+
+```{r}
+rss<-sum((model$residuals)^2)
+n<-nrow(df)
+```
+
+```{r}
+loglik<- -n/2*log(2*pi*rss/n)-n/2
+```
+
+```{r}
+-2*loglik+k_val*(length(model$coefficients)+1)
+```
+
+```{r}
+model$coefficients
+```
+
+```{r}
+model_lin<-lm(data=df,formula=y~1)
+summary(model_lin)
+```
+
+```{r}
+AIC(model_lin)
+```
+
+```{r}
+rss<-sum((model_lin$residuals)^2)
+n<-nrow(df)
+loglik<- -n/2*log(2*pi*rss/n)-n/2
+-2*loglik+2*(length(model_lin$coefficients)+1)
+```
+
+```{r}
+length(model_lin$coefficients)
+```
+
+## ¿Qué ocurre cuando los errores no siguen una distribución normal?
+
+En la ecuación anterior el valor de Y se supone que va entre $[-\infty,\infty]$,
+pero si tratamos de predecir un valor binario: Si/No o el número personas que
+circulan por una calle nos salimos de ese rango.
+
+Es en estos casos cuando utilizamos modelos lineales generalizados. Utilizamos
+una función de enlace $g(y)$ (link function) que transforma los resultados: $$
+g\left(\hat{Y}\right)=X \hat{\beta}
+$$
+
+Su inversa sería $g^{-1}()$ : $$
+\hat{Y}=g^{-1}\left(X \hat{\beta}\right)
+$$
+
+### Distribución bernuilli y binomial
+
+#### Bernuilli
+
+La distribución de Bernuilli es una distribución discreta que puede tomar dos
+valores uno con probabilidad $p$ y otro $q=1-p$. Se utiliza para describir
+sucesos que solo tienen dos posibles resultados como Si/No, 1/0 o Cara/Cruz.
+
+Estimadores **media** ($\mu$) y **varianza** ($\sigma^2$): $$
+\mu=p \qquad
+\sigma^2=p·q=p·(1-p)
+$$
+
+La función de densidad de probabilidad se puede representar como: $$
+f(k;p)=\left\{ 
+\begin{matrix} 
+p & \text{si  } k=1 \\  
+1-p & \text{si  } k=0 
+\end{matrix}
+\right.
+$$ donde $k$ solo admite dos posibles valores $k \in \left\{0,1 \right\}$.
+
+Esta formula también se puede expresar como: $$
+Pr_{Bernoulli}(k)=p^k(1-p)^{1-k} \qquad k \in \left\{0,1 \right\}.
+$$
+
+La distribución de Bernoulli es un caso especial de la **distribución binomial**
+con n=1.
+
+#### Binomial
+
+Si tenemos $n$ sucesos independientes que siguen una distribución de Bernoulli,
+¿cual es la probabilidad de que $k$ sucesos sean positivos?.
+
+Al tener $k$ sucesos donde $k \in \left\{0,1,2,...,n \right\}$, la función será
+la de Bernoulli multiplicada por el coeficiente binomial que acabamos de ver: $$
+Pr(k)=\binom{n}{k}p^k(1-p)^{n-k}
+$$
+
+#### Función enlace - Logit
+
+Tenemos que forzar a la regresión lineal al rango $[0,1]$. Esto lo podemos
+conseguir con la función con la función **función logística** o **sigmoide**: $$
+p=\hat{y}=g^{-1}(x·\hat{\beta})=\frac{1}{1+e^{-x·\hat{\beta}}}
+$$ Su inversa se conoce como la función **logit**: $$
+x·\hat{\beta}=g(\hat{y})= log \left( \frac{\hat{y}}{1-\hat{y}} \right)=log \left( \frac{p}{1-p} \right)
+$$
+
+De donde sacábamos que la solución de la regresión lineal era el logaritmo de la
+razón de monomios: $log \left( \frac{p}{1-p} \right)$
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+
+y<-seq(-10,10,length.out = 100)
+xb<-1/(1+exp(-y))
+plot(y,xb,t="l")
+```
+
+#### Interpretación de los coeficientes
+
+$$
+log(Odds)=log \left(\frac{p}{1-p} \right)=\beta_0+\beta_1 · x_1+\beta_2 · x_2+...
+$$ $$
+\frac{p}{1-p}=e^{\beta_0}·e^{\beta_1 · x_1}·e^{\beta_2 · x_2}·...
+$$
+
+#### Estimador máxima verosimilitud
+
+##### Bernuilli
+
+Se tratará de modificar los valores de $\beta$ para que la siguiente función sea
+máxima: $$
+MLE=\mathcal {L}(\beta)=p(y_1,....y_n| x_1,....,x_n;\beta)=\prod_{i=1}^n {p^{y_{i}}(1-p)^{1-y_i}}
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n {y_{i}·log(p)+(1-y_i)·log (1-p)}=\\
+=\sum_{i=1}^n {y_{i}·log(p)-y_i·log (1-p)+log(1-p)}=\\
+=\sum_{i=1}^n {y_{i}·log \left( \frac{p}{1-p} \right)+log(1-p)}=\\
+=\sum_{i=1}^n {y_{i}·(\beta_0+\beta_1 · x_{i1}+\beta_2 · x_{i2}+...)+log\left(1-\frac{1}{1+e^{-(\beta_0+\beta_1 · x_{i1}+\beta_2 · x_{i2}+...)}}\right)}
+$$
+
+##### Binomial
+
+Se tratará de modificar los valores de $\beta$ para que la siguiente función sea
+máxima: $$
+MLE=\mathcal {L}(\beta)=p(y_1,....y_n| x_1,....,x_n;\beta)=\prod_{i=1}^n \binom{n}{y_i} {p^{y_{i}}(1-p)^{1-y_i}}
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n log \binom{n}{y_i} +{y_{i}·log(p)+(1-y_i)·log (1-p)}
+$$
+
+#### Ejemplo Bernuillli
+
+```{r}
+set.seed(123)
+x<-rep(c(rep(0.2,3),rep(0.4,2),rep(0.1,6)),10)
+y<-sapply(x,function(xi) rbinom(1,size=1,prob=xi*2+0.1))
+df<-data.frame(y,x)
+#df
+```
+
+```{r}
+model_bernuilli<-glm(data=df,formula=y~x,family=binomial)
+summary(model_bernuilli)
+```
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6,repr.plot.res = 200)
+
+x_lin<-seq(0,0.4,length.out = 20)
+
+prob_real<-x_lin*2+0.1
+log_odds_real<-log(prob_real/(1-prob_real))
+plot(x_lin,log_odds_real,t='l')
+
+
+log_odds_est<-model_bernuilli$coefficient[1]+model_bernuilli$coefficient[2]*x_lin
+#log_odds_est<-predict(model_bernuilli,data.frame(x=x_lin))
+
+lines(x_lin,log_odds_est,col="red")
+```
+
+```{r}
+x_lin<-seq(0,0.4,length.out = 20)
+
+prob_real<-x_lin*2+0.1
+plot(x_lin,prob_real,t='l')
+
+
+log_odds_est<-model_bernuilli$coefficient[1]+model_bernuilli$coefficient[2]*x_lin
+#prob_est<-exp(log_odds_est)/(1+exp(log_odds_est))
+#prob_est<-1/(1+exp(-log_odds_est))
+prob_est<-predict(model_bernuilli,data.frame(x=x_lin),type="response")
+
+lines(x_lin,prob_est,col="red")
+
+#abline(lm(data=df,formula=y~x),col='green')
+```
+
+```{r}
+xb<-df$x*model_bernuilli$coefficients[2]+model_bernuilli$coefficients[1]
+
+df$linear_model<-xb
+df$predict_result<-predict(model_bernuilli,df)
+df$prob<-1/(1+exp(-xb))
+df$prob_real <- df$x*2+0.1
+#linear_model y predict_result son iguales. No son más que log(odds)
+```
+
+```{r}
+head(df,20)
+```
+
+#### Ejemplo Binomial
+
+```{r}
+library("dplyr")
+df_count<-df[,c("x","y")] %>% group_by(x) %>% summarize(succeed=sum(y), fail=sum(1-y))
+df_count
+```
+
+```{r}
+model_binom<-glm(data=df_count,formula=cbind(succeed,fail)~x,family=binomial)
+summary(model_binom)
+```
+
+```{r}
+xb<-df_count$x*model_binom$coefficients[2]+model_binom$coefficients[1]
+df_count$linear_model<-xb
+df_count$predict_result<-predict(model_binom,df_count)
+df_count$prob<-1/(1+exp(-xb))
+df_count$prob_response<-predict(model_binom,df_count,type="response")
+```
+
+```{r}
+df_count
+```
+
+#### AIC
+
+El criterio de información de Akaike (AIC) es un estimador de la calidad
+relativa del modelo que tiene en cuenta su complejidad. $$
+AIC = 2·P-2·ln\left( \mathcal {L} \right)
+$$
+
+##### Bernuilli
+
+$$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n {y_{i}·(\beta_0+\beta_1 · x_{i1}+\beta_2 · x_{i2}+...)+log\left(1-\frac{1}{1+e^{-(\beta_0+\beta_1 · x_{i1}+\beta_2 · x_{i2}+...)}}\right)}
+$$
+
+```{r}
+AIC(model_bernuilli,k=2)
+```
+
+```{r}
+loglik<-sum(df$y*(df$x*model_bernuilli$coefficient[2]+model_bernuilli$coefficient[1]))+
+        sum(log(1-1/(1+exp(-(df$x*model_bernuilli$coefficient[2]+model_bernuilli$coefficient[1])))))
+```
+
+```{r}
+-2*loglik+2*length(model_bernuilli$coefficients)
+```
+
+#### Binomial
+
+$$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n log \binom{n}{y_i}+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}_{bernuilli}
+$$
+
+```{r}
+AIC(model_binom,k=2)
+```
+
+```{r}
+sum_binom_coef<- sum(log(apply(df_count,1,function(x) choose(x["succeed"]+x["fail"],x["succeed"]))))     
+loglik_binomial<- sum_binom_coef+loglik
+```
+
+```{r}
+-2*loglik_binomial+2*length(model_binom$coefficients)
+```
+
+```{r}
+AIC(model_bernuilli)-AIC(model_binom)
+2*sum_binom_coef
+```
+
+#### Función enlace - Probit
+
+Otra opción en lugar de usar la funcíon **logit**: $$
+x·\hat{\beta}=g(\hat{y})= log \left( \frac{\hat{y}}{1-\hat{y}} \right)=log \left( \frac{p}{1-p} \right)
+$$
+
+es usar la función **probit**: $$
+x·\hat{\beta}=\Phi^{-1}(\hat{y})
+$$
+
+Donde:
+
+$\Phi^{-1}(\hat{y})$ es la inversa de la función acumulativa de probabilidad de
+una función normal de media 0 y varianza 1: $\mathcal {N}(0,1)$
+
+De esta forma se podría considerar que la probabilidad de $y$ sigue una función
+normal: $$
+\hat{y}=\Phi(x·\hat{\beta})
+$$
+
+Así la probabilidad de que $y=1$ es: $$
+Pr(\hat{y_i}=1)=\Phi(x_i·\hat{\beta})
+$$ $$
+Pr(\hat{y_i}=0)=1-\Phi(x_i·\hat{\beta})
+$$
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+
+y<-seq(-10,10,length.out = 100)
+x_logit<-1/(1+exp(-y))
+plot(y,x_logit,t="l",col='red',ylab='X')
+x_probit<-pnorm(y)
+lines(y,x_probit,t="l",col='blue')
+```
+
+```{r}
+set.seed(123)
+x<-rep(c(rep(0.2,3),rep(0.4,2),rep(0.1,6)),10)
+y<-sapply(x,function(xi) rbinom(1,size=1,prob=xi*2+0.1))
+df<-data.frame(y,x)
+```
+
+```{r}
+model_probit<-glm(data=df,formula=y~x,family=binomial('probit'))
+summary(model_probit)
+```
+
+```{r}
+model_logit<-glm(data=df,formula=y~x,family=binomial('logit'))
+summary(model_logit)
+```
+
+```{r}
+x_lin<-seq(0,0.4,length.out = 20)
+y_est_logit<-model_logit$coefficient[1]+model_logit$coefficient[2]*x_lin # log(odds)
+y_est_probit<-model_probit$coefficient[1]+model_probit$coefficient[2]*x_lin
+
+y_real<-x_lin*2+0.1 # probability
+
+log_odds_real<-log(y_real/(1-y_real)) #logit
+plot(x_lin,log_odds_real,t='l',col='red',ylab='y transformada')
+lines(x_lin,y_est_logit,col="red",lty=2)
+
+probit=qnorm(y_real)
+lines(x_lin,probit,t='l',col='blue')
+lines(x_lin,y_est_probit,col="blue",lty=2)
+```
+
+```{r}
+x_lin<-seq(0,0.4,length.out = 20)
+y_est_logit<-predict(model_logit,data.frame(x=x_lin),type="response")
+y_est_probit<-predict(model_probit,data.frame(x=x_lin),type="response")
+y_real<-x_lin*2+0.1 # probability
+
+plot(x_lin,y_real,t='l',col='gray')
+lines(x_lin,y_est_logit,t='l',col='red')
+lines(x_lin,y_est_probit,col="blue")
+```
+
+Los coeficientes de una regresión logísitca utilizando **logit** eran fáciles de
+interpretar, teniendo en cuenta que la regresión lineal daba simplemente el
+logaritmo de la razón de monomios. $$
+log \left(\frac{p}{1-p} \right)=\hat{y}=\beta_0+x_1·\beta_1+x_2·\beta_2+.......
+$$
+
+Cada coeficiente (elevalo a $e$) simplemente aumenta de forma multiplicativa la
+razón de monomios: $$
+\frac{p}{1-p}=e^{\beta_0}·e^{x_1·\beta_1}·e^{x_2·\beta_2}·.......
+$$
+
+Pero en la regresión logística utilizando **probit** como función de enlace esto
+es más complicado, ya que los coeficientes cambian: $$
+\Phi^{-1}(\hat{y})=\beta_0+x_1·\beta_1+x_2·\beta_2+.......
+$$ Podrían ser interpretados como la diferencia en el z-score asociado con cada
+unidad de diferencia en la predicción de la variable.
+
+## Distribución Poisson
+
+Tiene su origen en una distribución **binomial** a medida que
+$n \rightarrow \infty$ y $p \rightarrow 0$, manteniendo $\lambda=n·p$ constante.
+
+Esta distribución expresa la probabilidad de que un número de eventos dado
+ocurra en un intervalo de tiempo (o espacio) fijo si los eventos curren con una
+frecuencia constante y son independientes (no dependen de cuando ocurrió el
+último evento).
+
+Ejemplo: Número de llamadas que cursa una antena de telefonía móvil en una
+franja horaria.
+
+Estimadores **media** ($\mu$) y **varianza** ($\sigma^2$): $$
+\mu=\lambda \qquad
+\sigma^2=\lambda
+$$
+
+Un evento puede ocurrir $k \in \left\{0,1,2,3,... \right\}$ veces en un
+intervalo de tiempo dado. El número de ventos que ocurre en media se define con
+$\lambda$. La probabilidad de observar $k$ eventos en un intervalo viene dado
+por la ecuación: $$
+Pr(Y=k)=\frac{\lambda^k}{k!} e^{-\lambda}=\frac{e^{k·log(\lambda)-\lambda}}{k!} 
+$$
+
+#### Función enlace
+
+En este caso la regresión lineal ha de estar en el rango $[0,\infty]$ porque no
+podrán existir conteos negativos. Esto lo podemos conseguir con la función con
+la exponencial: $$
+\lambda=\hat{y}=g^{-1}(x·\hat{\beta})=e^{x·\hat{\beta}}
+$$ Su inversa, la **función de enlace**, es el logaritmo natural o neperiano: $$
+x·\hat{\beta}=g(\hat{y})= log \left( \hat{y} \right)=log \left( \lambda \right)
+$$
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+
+y<-seq(-10,10,length.out = 100)
+xb<-exp(y)
+plot(y,xb,t="l")
+```
+
+#### Estimador máxima verosimilitud
+
+Se tratará de modificar los valores de $\beta$ para que la siguiente función sea
+máxima:
+
+$$
+MLE=p(y_1,....y_n| x_1,....,x_n;\beta)=\prod_{i=1}^n \frac{e^{y_i·log(\lambda)-\lambda}}{y_i!} =\prod_{i=1}^n \frac{exp(y_i·\beta·x_i-exp(\beta·x_i))}{y_i!}
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n y_i·\beta·x_i-exp(\beta·x_i)-log(y_i!)
+$$
+
+#### Interpretación de los coeficientes
+
+$$
+log \left( \lambda \right)=\beta_0+\beta_1 · x_1+\beta_2 · x_2+...
+$$ $$
+\lambda=e^{\beta_0}·e^{\beta_1 · x_1}·e^{\beta_2 · x_2}·...
+$$
+
+-   exp($\beta_0$) : Efecto de la media $\lambda$ cuando X = 0
+
+-   exp($\beta_k$) $k \in [1,m]$ : Cada incremento de unidad en $x_{k}$ tiene un
+    efecto multiplicativo de exp($\beta_k$) en $\lambda$
+
+    -   Si $\beta_k$=0, entonces exp($\beta_k$)=1, y el valor de $\lambda$ es
+        independiente del valor de X
+
+```{r}
+set.seed(123)
+x<-rep(c(0.1,0.01,1,2,5,6,4,3,7,8,4.5),50)
+y<-sapply(x,function(xi) rpois(1,lambda=xi*2+5))
+df<-data.frame(y,x, lambda=x*2+5)
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+#| scrolled: false
+model_poisson<-glm(data=df,formula=y~x,family=poisson)
+summary(model_poisson)
+```
+
+x\*b1+b0 = log(y) =\> exp(x\*b1+b0)=y
+
+Los coeficientes, su valor elevado a la exponencial exp(0.16) indican el
+crecimiento en función del incremento de x
+
+```{r}
+#Los coeficientes reales serán:
+exp(model_poisson$coefficient)
+```
+
+```{r}
+#| scrolled: false
+options(repr.plot.height=4,repr.plot.width=6)
+
+x_lin<-seq(0,10,length.out = 20)
+
+lambda_real<-x_lin*2+5
+plot(x_lin,lambda_real,t='l')
+
+y_est<-model_poisson$coefficient[1]+model_poisson$coefficient[2]*x_lin
+lines(x_lin,exp(y_est),col="red")
+```
+
+```{r}
+xb<-df$x*model_poisson$coefficients[2]+model_poisson$coefficients[1]
+df$linear_model<-xb
+df$predict_result<-predict(model_poisson,df)
+df$y_est<-exp(xb)
+df$y_est_response<-predict(model_poisson,df,type="response")
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+family(model_poisson)$linkfun
+
+family(model_poisson)$linkinv 
+```
+
+```{r}
+plot(df$y_est,df$y-df$y_est)
+#plot(df$y_est, residuals(model_poisson, type='response'))
+```
+
+En una distribución de poisson tenemos los estimadores **media** ($\mu$) y
+**varianza** ($\sigma^2$): $$
+\mu=\lambda \qquad
+\sigma^2=\lambda
+$$
+
+es decir, a medida que umenta el valor de $\mu$ (nuestra predicción), también lo
+hará la varianza. Con lo cual es normal ver que los residuos se van esparciendo
+a medida que aumenta el valos predicho. Por eso se define el residuo de Pearson:
+$$
+residuo_i = \frac{y_i - \hat{y_i}}{\sqrt{\hat{y_i}}}
+$$
+
+```{r}
+plot(df$y_est,(df$y-df$y_est)/sqrt(df$y_est ))
+#plot(df$y_est, residuals(model_poisson, type='pearson'))
+```
+
+```{r}
+plot(df$y_est,(df$y-df$y_est)/df$y_est )
+#plot(df$y_est, residuals(model_poisson, type='working'))
+#plot(df$y_est,model_poisson$residuals)
+```
+
+```{r}
+hist(residuals(model_poisson))
+```
+
+Más información de otros tipos de residuos:
+https://www.datascienceblog.net/post/machine-learning/interpreting_generalized_linear_models/
+
+### Exponencial
+
+Describe el tiempo que transcurre entre dos eventos que siguen una distribución
+de Poisson. Es decir, dado un proceso que produce eventos a de forma continua e
+independiente a una tasa constante, el tiempo entre dos eventos vendrá dado por
+una distribución exponencial.
+
+Ejemplo: Tiempo entre dos llamadas consecutivas que llegan a una antena de
+telefonía móvil en una franja horaria.
+
+Estimadores **media** ($\mu$) y **varianza** ($\sigma^2$): $$
+\mu=\lambda^{-1} \qquad
+\sigma^2=\lambda^{-1}
+$$
+
+**Función de densidad de probabilidad**
+
+$$
+f(y;p)= \left\{ 
+\begin{matrix} 
+\lambda e^{-\lambda y}=\frac{1}{\mu} e^{-\frac{y}{\mu}}  & \text{si  } y \geq 0 \\  
+0 & \text{si  } y<0 
+\end{matrix}
+\right.
+$$
+
+#### Función enlace
+
+En este caso la regresión lineal ha des estar en el rango $[0,\infty]$ porque no
+podrán existir conteos negativos. Para esta distribución la función de enlace
+será función inversa $g(x)=\frac{1}{x}$: $$
+\mu=\hat{y}=g^{-1}(x·\hat{\beta})=\left( x·\hat{\beta} \right)^{-1}
+$$ Su inversa, la **función de enlace**, es la misma función: $$
+x·\hat{\beta}=g(\hat{y})=g(\mu)=\frac{1}{\mu}
+$$
+
+#### Estimador máxima verosimilitud
+
+Se tratará de modificar los valores de $\beta$ para que la siguiente función sea
+máxima:
+
+$$
+MLE=p(y_1,....y_n| x_1,....,x_n;\beta)=\prod_{i=1}^n \frac{1}{\mu} exp(-y_i·\mu^{-1})=\prod_{i=1}^n x_i·\beta· exp(-y_i·x_i·\beta)
+$$
+
+Para simplificar pasamos a logaritmos: $$
+\log {\Big (}{\mathcal {L}}(\beta ){\Big )}=\sum_{i=1}^n log(x_i·\beta) - y_i·x_i·\beta
+$$
+
+Ejemplo:
+
+Supongamos que tenemos un call center que recibe más o menos llamadas en función
+de la lluvia.
+
+-   Si no llueve recibe 5 llamadas/minuto. Eso implica una media de 0.2 minutos
+    entre dos llamadas
+-   Por cada mm de lluvia que cae aumenta en 2 las llamadas por minuto.
+
+Las llamadas por minuto que se esperan será: $$
+ \lambda = y = 2·x + 5
+$$ El tiempo medio (minutos de espera) entre llamadas será: $$
+ \mu = \frac{1}{\lambda} = \frac{1}{2·x + 5}
+$$
+
+Pero todo esto es desconocido para nosotros. Solo tenemos como parametro de
+entrada el tiempo de espera entre dos llamadas (columna y) y la lluvia (columna
+x):
+
+```{r}
+set.seed(123)
+x<-rep(c(0,0.1,1,2,5,6,4,3,7),50)
+y<-sapply(x,function(xi) rexp(1,rate=xi*2+5))
+df<-data.frame(y,x)
+```
+
+```{r}
+head(df)
+```
+
+```{r}
+df %>% group_by(x) %>% summarize(mu=mean(y), real=1/(2*first(x)+5))
+```
+
+```{r}
+library(ggplot2)
+ggplot(df,aes(x,y))+geom_point()+geom_point(y=1/(df$x*2+5),color="red")
+```
+
+```{r}
+?family
+```
+
+```{r}
+#| scrolled: false
+model_exp<-glm(data=df,formula=y~x,family=Gamma)
+summary(model_exp)
+```
+
+```{r}
+#| scrolled: false
+x_lin<-seq(0,10,length.out = 20)
+y_est<-model_exp$coefficient[1]+model_exp$coefficient[2]*x_lin
+#y_est<-predict(model_exp,data.frame(x=x_lin))
+
+lambda_real<-x_lin*2+5
+plot(x_lin,lambda_real,t='l')
+lines(x_lin,y_est,col="red")
+```
+
+Esta curva nos dice:
+
+-   Si no llueve recibimos 4.8 llamadas/min (sabemos que la real es 5).
+
+-   Si llueve 1mm recibiremos 2.11 llamadas/min (sabemos que la real es 2)
+
+```{r}
+paste("Si no llueve recibimos", round(model_exp$coefficient[1],3)," llamadas/min (sabemos que la real es 5).")
+paste("Por cada mm de lluvia que caiga reciviremos ", round(model_exp$coefficient[2],3)," llamadas/min más (sabemos que la real es 2).")
+```
+
+```{r}
+x_lin<-seq(0,10,length.out = 20)
+y_est<-model_exp$coefficient[1]+model_exp$coefficient[2]*x_lin
+mu_est<- (1/y_est)
+#mu_est<-predict(model_exp,data.frame(x=x_lin),type="response")
+
+lambda_real<-x_lin*2+5
+mu_real<-1/lambda_real
+
+plot(x_lin,mu_est*60,t='l',col="red")
+lines(x_lin,mu_real*60,col="black")
+grid()
+```
+
+Esta curva nos dice:
+
+```{r}
+paste("Si no llueve recibimos 1 llamada cada ",predict(model_exp,data.frame(x=0),type='response')*60, "segundos")
+ll<-3
+pr<-round(predict(model_exp,data.frame(x=ll),type='response')*60,2)
+paste("Si llueve",ll,"mm recibimos 1 llamada cada ",pr, 
+      "segundos (sabemos que el real es",1/(ll*2+5)*60,")")
+```
+
+```{r}
+hist(model_exp$residuals,breaks=30)
+```
+
+```{r}
+plot(model_exp$data$y,model_exp$residuals)
+```
+
+```{r}
+plot(df$y, residuals(model_exp, type='working'))
+```
+
+```{r}
+plot(df$y, residuals(model_exp, type='pearson'))
+```
+
+```{r}
+hist(model_exp$residuals,breaks=30)
+```
+
+## Ejemplo:
+
+Accidentes de tráfico. Datos desde 2009 hasta 2016 - Accidentes por distrito y
+con víctimas
+
+https://datos.madrid.es/
+
+```{r}
+accidentes<-read.csv('data//Accidentes_Madrid.csv')
+```
+
+```{r}
+head(accidentes)
+```
+
+```{r}
+acc_tmp<-t(accidentes)
+acc_tmp[1,]
+```
+
+```{r}
+nrow(acc_tmp[2:nrow(acc_tmp),])
+```
+
+```{r}
+accidentes_t=data.frame(acc_tmp[2:nrow(acc_tmp),])
+colnames(accidentes_t)<-c("tipo",acc_tmp[1,2:ncol(acc_tmp)])
+accidentes_t$anyo<-as.numeric(substr(rownames(accidentes_t),2,6))
+rownames(accidentes_t)<-NULL
+
+library(plyr)
+accidentes_t$tipo<-revalue(accidentes_t$tipo, 
+                           c("Nº Accidentes"="Total", "Nº Accidentes con víctimas"="victimas"))
+head(accidentes_t)
+```
+
+```{r}
+library(reshape2)
+library(dplyr)
+```
+
+```{r}
+df_acc<-melt(data=accidentes_t,id.vars=c("anyo","tipo"))
+df_acc$value<-as.numeric(df_acc$value)
+
+df_acc<-df_acc %>% dplyr::rename(distrito=variable)
+df_acc$distrito=factor(trimws(df_acc$distrito))
+head(df_acc)
+```
+
+```{r}
+df_acc_total<-df_acc[df_acc$tipo=="Total",]
+df_acc_total<-df_acc_total %>% dplyr::rename(Total=value) %>% select(-tipo)
+
+
+df_acc_victimas<-df_acc[df_acc$tipo=="victimas",]
+df_acc_victimas<-df_acc_victimas %>% dplyr::rename(victimas=value)  %>% select(-tipo)
+
+df_acc<-merge(df_acc_total,df_acc_victimas,by=c("anyo","distrito"))
+```
+
+```{r}
+str(df_acc)
+```
+
+```{r}
+library(ggplot2)
+ggplot(df_acc,aes(x=anyo,y=victimas))+geom_point()+geom_smooth()
+```
+
+### Modelo
+
+Vamos a crear un modelo GLM basado en Poisson y otro en el tradicional Gauss.
+Estos modelos tratarán de predecir el número medio de victimas que hay en
+función del año para todos los distritos. Más adelante realizaremos una
+separación por distrito, pero por ahora ignoraremos la columna distrito.
+
+Como veremos el AIC es mayor en el modelo gaussiano que en el de poisson, lo que
+significa que la verosimilitud (likelihood) es mayor en la del modelo de
+Poisson.
+
+```{r}
+model_accidente<-glm(df_acc,formula="victimas~anyo",family=poisson)
+summary(model_accidente)
+```
+
+```{r}
+model_accidente_gauss<-glm(df_acc,formula=victimas~anyo,family=gaussian)
+summary(model_accidente_gauss)
+```
+
+```{r}
+df_acc$pred_poisson<-exp(predict(model_accidente,df_acc))
+#df_acc$pred_poisson<-predict(model_accidente,df_acc, type="response")
+df_acc$pred_gaussian<-predict(model_accidente_gauss,df_acc)
+```
+
+```{r}
+confint(model_accidente)
+confint(model_accidente_gauss)
+```
+
+Si pintamos los dos modelos veremos que las líneas de la regresión son
+prácticamente idénticas:
+
+```{r}
+options(repr.plot.height=4,repr.plot.width=6)
+
+library(ggplot2)
+ggplot(df_acc,aes(x=anyo,y=victimas))+geom_point()+
+geom_line(aes(y=pred_poisson),color="red")+geom_line(aes(y=pred_gaussian),color="blue")
+```
+
+Si comprobamos su valor estimado año a año vemos que las diferencias son
+mínimas.
+
+Si comprobamos la diferencia de un año al siguiente en la predicción gaussiana
+vemos como la diferencia es constante, todos los años el número de víctimas
+aumenta de forma lineal en 7.127, el cual se corresponde con el coeficiente.
+Para este caso la formula de la predicción es: $$
+victimas= -13897.377 + anyo·7.127
+$$
+
+En cambio en la regressión de Poission nos dice que el número medio de victimas
+esperado cada año en un distrito es: $$
+victimas= exp(-26.092504 + anyo·0.015996) \\
+victimas= exp(-26.092504)· exp(anyo·0.015996) \\
+victimas= 4.657·10^{-12}· exp(anyo·0.015996) 
+$$ lo que significa que cada año que pasa el número de victimas aumenta de forma
+geométrica $e^{0.015996}=1.016124$. Es decir, cada año los accidentes aumentan
+un 1.6%.
+
+```{r}
+df_acc_pred<-unique(df_acc[,c("anyo","pred_poisson","pred_gaussian")])
+df_acc_pred
+```
+
+```{r}
+data.frame(diff(as.matrix(df_acc_pred)))
+```
+
+```{r}
+data.frame(diff(as.matrix(log(df_acc_pred))))
+```
+
+```{r}
+head(df_acc)
+```
+
+Podemos obtener los mismos resultados agregando todos los valores de cada
+distrito:
+
+```{r}
+num_distritos <- length(levels(df_acc$distrito))
+df_acc_t<-df_acc %>% dplyr::group_by(anyo) %>% dplyr::summarise(Total = sum(Total)/num_distritos, victimas=sum(victimas)/num_distritos)
+head(df_acc_t)
+
+
+model_accidente_t<-glm(df_acc_t,formula="victimas~anyo",family=poisson)
+summary(model_accidente_t)
+```
+
+```{r}
+model_accidente<-glm(df_acc,formula="victimas~distrito+anyo",family=poisson)
+summary(model_accidente)
+```
+
+Podemos mirar como cambia por distrito.
+
+Si nos fijamos, la pendiente será la misma, pero cada distrito tiene un valor
+muy diferente. El modelo que hemos analizado es: $$
+victimas= exp(-26.027735 + anyo·0.015996+\Delta_{distrito})
+$$ Donde $\Delta_{distrito}$ es el incremento (o decremento) respecto al
+distrito base, el de ARGANZUELA.
+
+Así el distrito de Chamartín tiene un 46% ($e^{0.382419}=1.46$) más de
+accidentes que el distrito de Arganuzela.
+
+Si queremos comparar cuantos accidentes hay en Moncloa-Aravaca respecto a
+Chamartin solo tenemos que restar sus coeficientes:
+$e^{0.135960-0.382419}=e^{-0.246458}=0.78$.
+
+```{r}
+df_acc = df_acc %>% mutate(distrito_relevel = relevel(distrito, ref="CHAMARTIN"))
+
+model_accidente<-glm(df_acc,formula=victimas~anyo+distrito_relevel,family=poisson)
+
+summary(model_accidente)
+```
+
+Otra opción es ver si en algún distrito está disminuyendo el número de
+accidentes año tras año. Para ello usamos la formula: $$
+victimas= exp(-25.69 + anyo·0.01583+\Delta_{distrito}+\Delta_{distrito\_anyo}·anyo)
+$$ Donde $\Delta_{distrito}$ es el incremento (o decremento) respecto al
+distrito base, el de ARGANZUELA y $\Delta_{distrito\_anyo}$ es cuanto aumenta
+cada año respecto al base de ARGANZUELA.
+
+```{r}
+model_accidente<-glm(df_acc,formula="victimas~distrito*anyo",family=poisson)
+summary(model_accidente)
+```
+
+Así por ejemplo para el distrito de MONCLOA-ARAVACA, tenemos: $$
+victimas= exp(-25.69 + anyo·0.01583+39.11-0.01937·anyo)
+$$
+
+```{r}
+df_moncloa<-data.frame(distrito="MONCLOA-ARAVACA",anyo=2009:2016)
+df_moncloa$pred<-exp(predict(model_accidente,df_moncloa))
+df_moncloa<-merge(df_moncloa,df_acc[,c("anyo","distrito","victimas")],by=c("anyo","distrito"))
+df_moncloa
+```
+
+```{r}
+ggplot(df_moncloa,aes(x=anyo))+geom_line(aes(y=pred),color="red")+geom_point(aes(y=victimas))
+```
+
+```{r}
+cnf<-confint(model_accidente)
+cnf[c("(Intercept)","anyo","distritoMONCLOA-ARAVACA","distritoMONCLOA-ARAVACA:anyo"),]
+```
+
+```{r}
+df_acc = df_acc %>% mutate(distrito_relevel = relevel(distrito, ref="MONCLOA-ARAVACA"))
+model_accidente<-glm(df_acc,formula=victimas~anyo*distrito_relevel,family=poisson)
+summary(model_accidente)
+cnf<-confint(model_accidente)
+cnf[c("(Intercept)","anyo"),]
+```
+
+# COVID-19
+
+```{r}
+library(dplyr)
+#df_acumulados<-read.csv("https://covid19.isciii.es/resources/serie_historica_acumulados.csv")
+df_acumulados<-read.csv("data/serie_historica_acumulados.csv")
+df_acumulados$FECHA<-as.Date(df_acumulados$FECHA,format="%d/%m/%Y")
+head(df_acumulados)
+```
+
+```{r}
+df_acumulados_all<-df_acumulados %>% group_by(FECHA) %>% 
+    summarise_at(c("CASOS","Hospitalizados","UCI","Fallecidos","Recuperados"), sum, na.rm = TRUE)
+```
+
+```{r}
+ggplot(df_acumulados_all,aes(x=FECHA,y=Fallecidos))+geom_line()
+```
+
+```{r}
+df_acumulados<-df_acumulados %>% filter(FECHA<as.Date("2020-04-01"))
+df_acumulados_all<-df_acumulados_all %>% filter(FECHA<as.Date("2020-04-01"))
+df_acumulados_all$Fallecidos_dia<-c(NA,diff(df_acumulados_all$Fallecidos))
+df_acumulados_all$dia<-seq(nrow(df_acumulados_all))
+```
+
+```{r}
+tail(df_acumulados_all)
+```
+
+```{r}
+model_poisson<-glm(df_acumulados_all,formula=Fallecidos_dia~dia,family=poisson)
+summary(model_poisson)
+```
+
+```{r}
+paste("Cada día las vícimas se multiplican por",exp(model_poisson$coefficients[2]))
+```
+
+```{r}
+preds<-df_acumulados_all[,c("Fallecidos_dia","dia","FECHA")]
+preds$pred<-predict(model_poisson,preds,type="response")
+#preds$pred<-exp(model_poisson$coefficients[2]*preds$dia+model_poisson$coefficients[1])
+ggplot(preds,aes(x=FECHA))+
+    geom_line(aes(y=Fallecidos_dia,color="Real"))+
+    geom_line(aes(y=pred,color="Estimado"))
+```
+
+```{r}
+df_acumulados_all$log_fallecidos<-log(df_acumulados_all$Fallecidos_dia)
+df_acumulados_all_no_inf<-df_acumulados_all[!is.infinite(df_acumulados_all$log_fallecidos),]
+
+model<-lm(data=df_acumulados_all_no_inf,
+           formula=log_fallecidos~dia)
+summary(model)
+```
+
+```{r}
+paste("Cada día las vícimas se multiplican por",exp(model$coefficients[2]))
+```
+
+```{r}
+preds<-df_acumulados_all[,c("Fallecidos_dia","log_fallecidos","dia","FECHA")]
+preds$pred<-predict(model,preds)
+preds$pred_fallecidos<-exp(preds$pred)
+ggplot(preds,aes(x=FECHA))+
+    geom_line(aes(y=Fallecidos_dia,color="Real"))+
+    geom_line(aes(y=pred_fallecidos,color="Estimado"))
+```
+
+# Test A/B con GLM
+
+Repetimos el test A/B que hicimos en el curso de estadística en el notebook 7,
+donde comparamos la versión frecuentista con la bayesiana.
+
+Ahora utilizaremos una versión basada en GLM.
+
+Más información aquí: https://rpubs.com/Mike/ab-test
+
+```{r}
+na_t <- 1000
+na_s <- 197
+nb_t <- 1000
+nb_s <- 230
+m <- matrix(c(na_s,na_t,nb_s,nb_t), byrow = T,nrow = 2,
+            dimnames=list(c("control","nuevo"),c("exitos","intentos")))
+m
+```
+
+```{r}
+chisq.test(m)
+```
+
+```{r}
+df=data.frame(m)
+df$type<-factor(rownames(df))
+df
+```
+
+```{r}
+df$exitos[2]/df$exitos[1]
+```
+
+### Regresión logística
+
+$$
+log(Odds)=log \left(\frac{p}{1-p} \right)=\beta_0+\beta_1 · x
+$$ $$
+\frac{p}{1-p}=e^{\beta_0}·e^{\beta_1 · x}
+$$
+
+```{r}
+model <- glm(cbind(exitos, intentos-exitos) ~ type, family=binomial, data=df)
+summary(model)
+exp(model$coef[2])
+exp(confint(model))
+```
+
+#### Regresión poisson
+
+La regresión de poisson se usa tipicamente para modelar conteo de datos. Pero a
+veces es más relevante modelar el ratio en lugar del conteo.
+
+Así en lugar de tener: $$
+log(y)=\beta_0+\beta_1x
+$$ donde y es el conteo esperado para las variable $x$ tenemos:
+
+$$
+log(\frac{y}{n})=\beta_0+\beta_1x
+$$ donde n es el número de intentos para esa variable x. Así la ecuación puede
+ser escrita como: $$
+log(y)=log(n)+\beta_0+\beta_1x
+$$ Ese valor de $log(n)$ es lo que se conoce como offset()
+
+```{r}
+model<-glm(formula=exitos~type+offset(log(intentos)),data=df,family=poisson)
+summary(model)
+#library(jtools)
+#plot_summs(model, scale = TRUE, exp = TRUE)
+exp(model$coef[2])
+exp(confint(model))
+```
+
+## Información complementaria
+
+¿Que modelo de regresión debería elegir?
+
+https://www.maximaformacion.es/blog-dat/que-modelo-de-regresion-deberia-elegir/
