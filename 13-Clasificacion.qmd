@@ -478,7 +478,7 @@ prf <- performance(pr, measure = "prec", x.measure = "rec", label.ordering=c("ru
 plot(prf,colorize=TRUE)
 ```
 
-### AUC
+#### AUC
 
 Area bajo la curva (Area Under The Curve), número entre 0 y 1 que mide como de
 bueno es un clasificador.
@@ -520,7 +520,7 @@ geom_abline(slope = 1 ,intercept = 1, alpha=0.5) +
                                paste0("Modelo2. AUC:",pROC::auc(rocobj2))))
 ```
 
-#### Ejemplo
+### Ejemplo Verrugas
 
 Este conjunto de datos contiene información sobre los resultados del tratamiento
 de verrugas de 90 pacientes que utilizan crioterapia.
@@ -605,7 +605,7 @@ prf_auc=performance(pr, measure = "auc")
 paste("The AUC is",prf_auc@y.values[[1]])
 ```
 
-### Churn rate
+### Ejemplo Churn rate
 
 Vamos a utilizar un dataset publicado por IBM en
 [kaggle](https://www.kaggle.com/blastchar/telco-customer-churn).
@@ -841,6 +841,211 @@ cf_m2$table
 Se puede profundizar más en estos datos mirando el notebook:
 
 https://www.kaggle.com/farazrahman/telco-customer-churn-logisticregression
+
+
+## Entendiendo los coeficientes
+
+
+En la regresión logística, estamos tratando de predecir una variable binaria $Y$ (que toma valores 0 o 1) basándonos en varias variables de entrada $X_1, X_2, ..., X_n$. La forma básica de la regresión logística se puede escribir como:
+
+$$
+\log \left( \frac{p}{1-p} \right) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n
+$$
+
+Aquí, $p$ es la probabilidad de que $Y=1$, y los $\beta$ son los coeficientes de la regresión. El término $\frac{p}{1-p}$ es la "razón de monomios" (odds ratio), y $\ln(\frac{p}{1-p})$ es el logaritmo de la razón de monomios (log-odds).
+
+Cada coeficiente $\beta_i$ representa el cambio en el log-odds para un incremento unitario en la variable $X_i$, manteniendo constantes las demás variables. Si $\beta_i$ es positivo, un incremento en $X_i$ aumentará la probabilidad de que $Y=1$, y si $\beta_i$ es negativo, un incremento en $X_i$ disminuirá la probabilidad de que $Y=1$.
+
+Un incremento unitario en $X_1$ incrementa el logaritmo de la razón de monomios (log-odds) en $\beta_1$. Para entender cómo esto afecta a la razón de monomios, necesitamos deshacer el logaritmo. 
+
+La relación entre el log-odds y la razón de monomios es:
+
+$$
+\frac{p}{1-p} = e^{\ln(\frac{p}{1-p})}
+$$
+
+Si sustituimos $\ln(\frac{p}{1-p})$ por $\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n$, obtenemos:
+
+$$
+\frac{p}{1-p} = e^{\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n}
+$$
+
+
+Recordemos que la relación entre el log-odds y la probabilidad es:
+
+$$
+p = \frac{e^{\log(\frac{p}{1-p})}}{1 + e^{\log(\frac{p}{1-p})}} = \frac{1}{1 + e^{-\log(\frac{p}{1-p})}}
+$$
+
+
+### Ejemplo: Peso de los niños al nacer
+
+Este dataset contien información de bebes recien nacidos y sus padres.
+Podemos usarlo como clasificación para ver cuales son los factores que
+más afectan al niño en función de si la madre es o no fumadora.
+
+Tenemos las siguientes variables que vamos a utilizar:
+
+| Nombre      | Variable                      |
+|-------------|-------------------------------|
+| Birthweight | Peso al nacer (libras)        |
+| Gestation   | Semanas que duró la gestación |
+| motherage   | Edad de la madre              |
+| smoker      | Madre fumadora 0/1            |
+
+```{r}
+bwt<-read.csv("data/birthweight_reduced.csv")
+bwt$smoker <- factor(bwt$smoker,labels=c("No","Yes"))
+str(bwt)
+```
+
+```{r}
+model <- glm(data=bwt, formula = smoker~Birthweight + Gestation, family=binomial())
+summary(model)
+```
+
+```{r}
+betalg <- model$coefficients
+ggplot(data=bwt, aes(x=Birthweight ,y=Gestation, color=smoker))+geom_point()+
+ geom_abline(intercept=-betalg[1]/betalg[3], slope=-betalg[2]/betalg[3],color="blue")
+```
+
+Vemos que el valor que más influye en si la madre es fumadora o no es en
+el peso del niño al nacer. No parece que afecte mucho al tiempo de
+gestación.
+
+Podemos calcular la probabilidad de que la madre sea fumadora mirando el
+peso del niño y los coeficientes de la regresión logística: $$
+    p = \frac{1}{1-e^{-\hat{Y}}}= \frac{1}{1-e^{-(\beta_0+\beta_1 · peso)}}   
+$$
+
+```{r}
+model <- glm(data=bwt, formula = smoker~Birthweight , family=binomial())
+model$coefficients
+
+peso<-seq(4,10,length.out=100)
+p <- 1/(1+exp(-(model$coefficients[1]+peso*model$coefficients[2])))
+plot(peso,p,t="l",xlab="Peso del niño")
+```
+
+```{r}
+pesoLibras <- 5
+pesoKg <- pesoLibras*0.453592
+ods <- predict(model,data.frame(Birthweight=pesoLibras))
+print(paste("Para un peso de",pesoKg,"Kg es",exp(ods),
+            "veces más probable que la madre sea fumadora"))
+print(paste("Para un peso de",pesoKg,
+            "Kg la probabilidad de que la madre sea fumadora es de",exp(ods)/(1+exp(ods))))
+```
+
+Otra forma de verlo es decir que cada libra que pesa el niño, la razón
+de probabilidades de que la madre se fumadora respecto a la que no lo
+es: $$
+log(\frac{p}{1-p})=\beta_0+\beta_1 · peso
+$$ $$
+\frac{p}{1-p}=e^{\beta_0}·e^{\beta_1 · peso}
+$$ Por cada unidad que aumenta el peso, el la razón de probabilidades
+aumenta $e^{\beta_1}$
+
+```{r}
+peso1 <- 9
+peso2 <- 10
+
+p1 <- 1/(1+exp(-(model$coefficients[1]+peso1*model$coefficients[2])))
+p2 <- 1/(1+exp(-(model$coefficients[1]+peso2*model$coefficients[2])))
+
+(p2/(1-p2))/(p1/(1-p1))
+```
+
+```{r}
+exp(model$coefficients[2])
+```
+
+### Censo
+
+Dataset de: https://archive.ics.uci.edu/ml/datasets/adult
+
+-   age: continuous.
+-   workclass: Private, Self-emp-not-inc, Self-emp-inc, Federal-gov,
+    Local-gov, State-gov, Without-pay, Never-worked.
+-   fnlwgt: continuous.
+-   education: Bachelors, Some-college, 11th, HS-grad, Prof-school,
+    Assoc-acdm, Assoc-voc, 9th, 7th-8th, 12th, Masters, 1st-4th, 10th,
+    Doctorate, 5th-6th, Preschool.
+-   education-num: continuous.
+-   marital-status: Married-civ-spouse, Divorced, Never-married,
+    Separated, Widowed, Married-spouse-absent, Married-AF-spouse.
+-   occupation: Tech-support, Craft-repair, Other-service, Sales,
+    Exec-managerial, Prof-specialty, Handlers-cleaners,
+    Machine-op-inspct, Adm-clerical, Farming-fishing, Transport-moving,
+    Priv-house-serv, Protective-serv, Armed-Forces.
+-   relationship: Wife, Own-child, Husband, Not-in-family,
+    Other-relative, Unmarried.
+-   race: White, Asian-Pac-Islander, Amer-Indian-Eskimo, Other, Black.
+-   sex: Female, Male.
+-   capital-gain: continuous.
+-   capital-loss: continuous.
+-   hours-per-week: continuous.
+-   native-country: United-States, Cambodia, England, Puerto-Rico,
+    Canada, Germany, Outlying-US(Guam-USVI-etc), India, Japan, Greece,
+    South, China, Cuba, Iran, Honduras, Philippines, Italy, Poland,
+    Jamaica, Vietnam, Mexico, Portugal, Ireland, France,
+    Dominican-Republic, Laos, Ecuador, Taiwan, Haiti, Columbia, Hungary,
+    Guatemala, Nicaragua, Scotland, Thailand, Yugoslavia, El-Salvador,
+    Trinadad&Tobago, Peru, Hong, Holand-Netherlands.
+
+```{r}
+adult<-read.csv("data/adult.data.txt",
+                col.names=c("age","workclass","fnlwgt","education","education-num","marital-status",
+                           "occupation","relationship","race","sex","capital-gain","capital-loss","hours-per-week",
+                           "native-country","50k"), stringsAsFactor=T)
+
+str(adult)
+```
+
+```{r}
+levels(adult$education)
+numlevels<-length(levels(adult$education))
+adult$education<-factor(adult$education,levels(adult$education)[c(4,5,6,7,1,2,3,8:numlevels)])
+```
+
+```{r}
+levels(adult$education)
+```
+
+```{r}
+model <- glm(data=adult, formula=X50k ~ age+education+sex, family = binomial())
+model
+```
+
+```{r}
+paste("Un hombre tiene ",exp(model$coefficients["sex Male"]),"veces más posibilidades de ganar más de 50k$ que una mujer")
+```
+
+```{r}
+paste("Cada año que pasa hay ",exp(model$coefficients["age"]),"veces más posibilidades de ganar más de 50k$")
+```
+
+```{r}
+paste("Una persona con Master tiene ",exp(model$coefficients["education Masters"]),"veces más posibilidades de ganar más de 50k$ que alguien con solo 1st-4th")
+```
+
+```{r}
+adult_master<-subset(adult,education==" Masters")
+model <- glm(data=adult_master, formula=X50k ~ age+sex, family = binomial())
+summary(model)
+```
+
+```{r}
+model <- glm(data=adult_master, formula=X50k ~ age*sex, family = binomial())
+summary(model)
+```
+
+```{r}
+confint(model)
+```
+
+
 
 ### Análisis matriz confusión test SARS-Covid-2
 

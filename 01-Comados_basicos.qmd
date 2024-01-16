@@ -29,6 +29,9 @@ Sobre **R**: [R for Data Science: Import, Tidy, Transform, Visualize, and Model 
 
 Aplicaciones movil Android/iPhone: https://artofstat.com/art-of-stat-inference
 
+**An Introduction to Statistical Learning**: Gareth James, Daniela Witten et al.
+https://www.statlearning.com/
+
 ## Estadística vs Machine Learning
 
 Más información aquí: [Markdown-Cheatsheet](https://www.reddit.com/r/MachineLearningLounge/comments/9soaw4/let_me_fix_that_for_you/)
@@ -36,6 +39,16 @@ Más información aquí: [Markdown-Cheatsheet](https://www.reddit.com/r/MachineL
 -   Estadística: Trata de entender las variables y su relación entre ellas. Las estadísitcas te ayudan a entender como es tu población de datos.
 
 -   Machine Learning: Trata de hacer predicciones, crear modelos que, a partir de una población limitada puedan **generalizar** y aprender como se comportarán los datos.
+
+El **enfoque estadístico** se fundamenta en la descripción y análisis de las características de un conjunto de datos, de donde se extrae información y conclusiones sobre el comportamiento de los datos y relaciones existentes entre ellos. Este enfoque utiliza técnicas y métodos que permiten organizar, describir, analizar e interpretar los datos para obtener información significativa y útil. La estadística se utiliza para desarrollar modelos estadísticos, diseñar encuestas y estudios de investigación, especialmente cuando se trata de grandes volúmenes de datos.
+
+Por otro lado, el **aprendizaje supervisado** es una subcategoría de machine learning y la inteligencia artificial. Se define por su uso de conjuntos de datos etiquetados para entrenar algoritmos que clasifican datos o prevén resultados con precisión. Este enfoque utiliza un conjunto de datos de entrenamiento para enseñar a los modelos a generar la salida deseada. El aprendizaje supervisado se puede separar en dos tipos de problemas en la minería de datos: clasificación y regresión.
+
+La principal diferencia entre estos dos enfoques radica en el tipo de información que se utiliza para entrenar el modelo y el enfoque que se utiliza para aprender. Mientras que el enfoque estadístico se basa en el análisis de las características de un conjunto de datos para extraer información y conclusiones, el aprendizaje supervisado utiliza datos de entrada y salida etiquetados para entrenar algoritmos que pueden clasificar datos o prever resultados con precisión. En resumen, el enfoque estadístico se centra en entender las relaciones existentes dentro de un conjunto de datos, mientras que el aprendizaje supervisado se orienta más a la clasificación de datos o el análisis predictivo.
+
+Para entender diferentes enfoques de modelado:
+https://www.amazon.com/Modeling-Mindsets-Many-Cultures-Learning/dp/B0BMJH7M9F
+
 
 # Introducción a R
 

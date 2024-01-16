@@ -4,56 +4,55 @@ Módulo: a distancia + práctica
 Duración: 32 horas
 Lenguajes: R
 Herramientas: Rstudio
- 
-·  	Introducción R y Notebooks
-·  	Comandos básicos
-·  	Funciones, uso e instalación de librerías
-·  	Gráficos
-·  	Estimadores estadísticos
-o   Media y varianza
-o   Mediana, cuartiles, percentiles y boxplot
-o   Moda
-·  	Funciones de probabilidad
-o   Histograma
-o   Función de densidad de probabilidad
-o   Función de distribución acumulativa
-·  	Análisis multivariante:
-o   Covarianza
-o   Correlación
-o   Teorema de Bayes
-o   Red Bayesiana
-o   Introducción a la causalidad
-·  	Muestreo
-o   Estimadores (Sesgo y varianza)
-o   Tipos de muestreo
-o   Márgenes de error
-·  	Tests estadísticos
-o   p-value
-o   tipos de error
-o   Test de 2 grupos:
-§  Comparando las medias: t-Student, Welchs
-o   Tests de X grupos:
-§  ANOVA
-o   Tests de bondad
-§   Chi-cuadrado
-§   Test Kolmogorov–Smirnov
-·  	Bayes: Estimador máxima verosimilitud/Estimador máximo a posteriori
-·  	Test A/B con y sin Bayes
-·  	Introducción a la minería de datos
-o   Tipos de aprendizaje: supervisado vs no supervisado
-o   Optimización
-§   Repaso descenso gradientes
-§   Programación no lineal
 
-·  	Aprendizaje supervisado
-o   Regresión lineal
-o   Regresión logística 
-o   Introducción a modelos lineales generalizados
+Por supuesto, aquí está tu texto formateado:
 
-·  	Aprendizaje no supervisado
-o   Clustering
-§  Métodos no jerárquicos (k-means)
-§   Métodos jerárquicos
-o   Reducción de la Dimensionalidad
-§   Análisis de componentes principales (PCA)
-
+- Introducción R y Notebooks
+- Comandos básicos
+- Funciones, uso e instalación de librerías
+- Gráficos
+- Estimadores estadísticos
+    - Media y varianza
+    - Mediana, cuartiles, percentiles y boxplot
+    - Moda
+- Funciones de probabilidad
+    - Histograma
+    - Función de densidad de probabilidad
+    - Función de distribución acumulativa
+- Análisis multivariante:
+    - Covarianza
+    - Correlación
+    - Teorema de Bayes
+    - Red Bayesiana
+    - Introducción a la causalidad
+- Muestreo
+    - Estimadores (Sesgo y varianza)
+    - Tipos de muestreo
+    - Márgenes de error
+- Tests estadísticos
+    - p-value
+    - tipos de error
+    - Test de 2 grupos:
+        - Comparando las medias: t-Student, Welchs
+    - Tests de X grupos:
+        - ANOVA
+    - Tests de bondad
+        - Chi-cuadrado
+        - Test Kolmogorov–Smirnov
+- Bayes: Estimador máxima verosimilitud/Estimador máximo a posteriori
+- Test A/B con y sin Bayes
+- Introducción a la minería de datos
+    - Tipos de aprendizaje: supervisado vs no supervisado
+    - Optimización
+        - Repaso descenso gradientes
+        - Programación no lineal
+- Aprendizaje supervisado
+    - Regresión lineal
+    - Regresión logística 
+    - Introducción a modelos lineales generalizados
+- Aprendizaje no supervisado
+    - Clustering
+        - Métodos no jerárquicos (k-means)
+        - Métodos jerárquicos
+    - Reducción de la Dimensionalidad
+        - Análisis de componentes principales (PCA)

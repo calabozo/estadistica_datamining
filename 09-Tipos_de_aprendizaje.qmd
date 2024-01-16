@@ -5,23 +5,10 @@ editor:
     wrap: 80
 ---
 
-# Introducción
+# Enfoques de modelado
 
-![](img/Diagrama.jpg)
 
-# Bibliografía
-
-**An Introduction to Statistical Learning**: Gareth James, Daniela Witten et al.
-https://www.statlearning.com/
-
-**Pattern Recognition and Machine Learning**, M.Bishop:
-http://users.isr.ist.utl.pt/\~wurmd/Livros/school/Bishop%20-%20Pattern%20Recognition%20And%20Machine%20Learning%20-%20Springer%20%202006.pdf
-
-**Deep Learning**, Ian Goodfellow http://www.deeplearningbook.org/
-
-# Aprendizaje máquina vs Minería de Datos vs Estadística
-
-### Estadística
+## Estadística
 
 En estadística vimos como realizar un análisis exploratorio de datos. Sabemos
 usar: \* Histogramas/Curvas de probabilidad/Kernel density estimation \*
@@ -32,11 +19,11 @@ y regresiones
 Siempre analizabamos el 100% de nuestros datos. Obteníamos una descripción
 detallada de nuestra población. No haciamos predicciones
 
-### Minería de datos
+## Minería de datos
 
 Utilizado para extraer información, conocimiento, útil de los datos en bruto.
 
-### Aprendizaje máquina
+## Aprendizaje máquina
 
 En el aprendizaje máquina tenemos algoritmos que dados unos datos de entrada, es
 capaz de *aprender* como se comportan esos datos en función de los parámetros de
@@ -60,8 +47,11 @@ Información, Conocimiento, y en algunos casos Sabiduría.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/DIKW_Pyramid.svg/494px-DIKW_Pyramid.svg.png)
 
-Por lo general: \* Información se define en términos de Datos. \* Conocimiento
-se define en términos de Información. \* Sabiduría en términos de Conocimiento.
+Por lo general: 
+
+* Información se define en términos de Datos. 
+* Conocimiento se define en términos de Información. 
+* Sabiduría en términos de Conocimiento.
 
 ![](https://pbs.twimg.com/media/EfYiz2AWsAAiPxh?format=jpg&name=small)
 
