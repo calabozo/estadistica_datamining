@@ -38,14 +38,21 @@ y_n&=\beta_0+\beta_1 x_n+\varepsilon_n
 \end{split}
 $$
 
-donde: \* $y_i$: i-esimo valor de la variable dependiente \* $x_i$: i-esimo
-valor de la variable independiente \* $\beta_0, \beta_1$: parámetros a
-determinal que dado un conjunto de $x_i$ produce los mejores $y_i$ \* $\beta_0$
-: Puede ser llamado sesgo, bias, intercept o término constante. Indica el corte
-en el eje Y \* $\beta_1$ : Puede ser llamado pendiente, slope. Indica cuanto
-aumenta Y por cada incremento de X \* $\varepsilon_i$: error, valor aleatorio.
+donde: 
 
-Podemos escribirlo en forma de matriz: $$
+* $y_i$: i-esimo valor de la variable dependiente 
+* $x_i$: i-esimo valor de la variable independiente 
+* $\beta_0, \beta_1$: parámetros a
+determinal que dado un conjunto de $x_i$ produce los mejores $y_i$ 
+* $\beta_0$: Puede ser llamado sesgo, bias, intercept o término constante. Indica el corte
+en el eje Y 
+* $\beta_1$ : Puede ser llamado pendiente, slope. Indica cuanto
+aumenta Y por cada incremento de X 
+* $\varepsilon_i$: error, valor aleatorio.
+
+Podemos escribirlo en forma de matriz: 
+
+$$
 \begin{bmatrix}
  y_1 \\ 
  y_2 \\ 
@@ -70,14 +77,21 @@ Podemos escribirlo en forma de matriz: $$
  \vdots \\ 
  \varepsilon_n
 \end{bmatrix}
-$$ Lo que se puede simplificar como: $$
+$$ 
+Lo que se puede simplificar como: 
+$$
 Y=X \beta+\varepsilon
 $$
 
-Donde: \* $Y \in \mathbb{R}^{n \times 1}$ \* $X \in \mathbb{R}^{n \times 2}$ \*
-$\beta \in \mathbb{R}^{1 \times 2}$ \* $\varepsilon \in \mathbb{R}^{n \times 1}$
+Donde: 
 
-Podemos usar la matriz inversa para resolver ecuaciones: $$
+* $Y \in \mathbb{R}^{n \times 1}$ 
+* $X \in \mathbb{R}^{n \times 2}$ 
+* $\beta \in \mathbb{R}^{1 \times 2}$ 
+* $\varepsilon \in \mathbb{R}^{n \times 1}$
+
+Podemos usar la matriz inversa para resolver ecuaciones: 
+$$
 \begin{split}
 Y &= X \beta \\
 X^{-1}Y&=X^{-1}X \beta \\
@@ -94,14 +108,18 @@ solución.
 
 Lo que tratamos de encontrar es la menos mala de las soluciones.
 
-Para números reales se define como: $$
+Para números reales se define como: 
+
+$$
 X^+ = \left( X^{\intercal} X  \right)^{-1} X^{\intercal}
-$$ Cuando: $$
+$$ Cuando: 
+$$
 X^+X = I
 $$
 
 El problema original consistía en querer calcular $\beta$ de tal forma que se
-minimice la influencia de $\varepsilon$: $$
+minimice la influencia de $\varepsilon$: 
+$$
 Y=X \beta+\varepsilon
 $$ En nuestro sistema $\varepsilon$ es desconocido, pero sabemos que tiene media
 cero y varianza finita. Así que simplificamos el siguiente sistema de
@@ -187,8 +205,8 @@ criterio_convergencia<-1e-4
 
 x_historico<-data.frame(x=x_0[1],y=x_0[2])
 for (i in 1:5000){
-    #g <- grad(myfuncVector,x_0)
-    g <- inv(hessian(myfuncVector,x_0)) %*% as.matrix(grad(myfuncVector,x_0),cols=1)
+    g <- grad(myfuncVector,x_0)
+    #g <- inv(hessian(myfuncVector,x_0)) %*% as.matrix(grad(myfuncVector,x_0),cols=1)
     if(abs(sum(g))<criterio_convergencia){
         break;
     }
@@ -329,11 +347,11 @@ $$
 
 donde:
 
-\* $Y$: variable dependiente
+* $Y$: variable dependiente
 
-\* $X_1,X_2,\cdots ,X_p$: variables independientes
+* $X_1,X_2,\cdots ,X_p$: variables independientes
 
-\* $\beta_0, \beta_1,\beta_2,\cdots ,\beta_p$: parámetros a determinal que dado
+* $\beta_0, \beta_1,\beta_2,\cdots ,\beta_p$: parámetros a determinal que dado
 un $X_k$ produce el mejor posible $Y$ \* $\varepsilon$: error, valor aleatorio.
 
 Condiciones para aplicarlo:
@@ -347,7 +365,8 @@ Condiciones para aplicarlo:
 4\. Que la varianza del error sea constante, se cumple heterocedasticidad
 
 Para calcular el valor óptimo de $\beta$ vamos a utilizar un poco de álgebra
-linea. $$
+linea. 
+$$
 \begin{split}
 y_1 &=\beta_1 x_{11}+\beta_2 x_{12}+\beta_3 x_{13}+\cdots+\beta_p x_{1p}+\varepsilon_1  \\
 y_2 &=\beta_1 x_{21}+\beta_2 x_{22}+\beta_3 x_{23}+\cdots+\beta_p x_{2p}+\varepsilon_1  \\
@@ -383,11 +402,14 @@ Podemos escribirlo en forma de matriz: $$
  \vdots \\ 
  \varepsilon_n
 \end{bmatrix}
-$$ Lo que se puede simplificar como: $$
+$$ 
+Lo que se puede simplificar como: 
+$$
 Y=X \beta+\varepsilon
 $$
 
-Al igual que en el caso anterior podemos estimar $\beta$ con: $$
+Al igual que en el caso anterior podemos estimar $\beta$ con: 
+$$
 \beta=\left( X^{\intercal}X  \right)^{-1} X^{\intercal} Y
 $$
 
@@ -421,7 +443,8 @@ $$
 R^2=1-\frac{SS_{res}}{SS_{tot}}=1-\frac{MSE(y,y')}{VAR(y)}
 $$
 
-Donde $SS_{res}$ es la suma del cuadrado de los residuos: $$
+Donde $SS_{res}$ es la suma del cuadrado de los residuos: 
+$$
 SS_{res}=\sum_i (y_i-y_i')^2
 $$
 
@@ -432,6 +455,7 @@ SS_{tot}=\sum_i (y_i-\bar{y})^2
 $$
 
 Cuanto más cercano a $1$ mejor seguirá la predicción a los datos reales.
+
 
 ```{r}
 myrsquared<-function(Y,est_Y){
@@ -548,11 +572,15 @@ bien. Para evitar el sobreajuste(overfitting) se puede recurrir a simplificar el
 modelo o a poner limitaciones sobre el mismo. Esto se conoce con el nombre de
 regularización.
 
-\* Regularización Ridge o $L^2$: se evita que los parámetros crezcan demasiado.
-Se añade la función de coste: $$
+* Regularización Ridge o $L^2$: se evita que los parámetros crezcan demasiado.
+Se añade la función de coste: 
+$$
 Coste = {1 \over n} \sum_{i=0}^n{(Y-\hat{Y})^2}+\lambda \sum_j \beta^2
-$$ \* Regularización Lasso o $L$: permite seleccionar los parámetros que más
-afectan al resultado. Se añade la función de coste: $$
+$$ 
+
+* Regularización Lasso o $L$: permite seleccionar los parámetros que más
+afectan al resultado. Se añade la función de coste: 
+$$
 Coste = {1 \over n} \sum_{i=0}^n{(Y-\hat{Y})^2}+\lambda \sum_j | \beta |
 $$
 
@@ -638,7 +666,6 @@ ks.test((powerplant.train$PE-powerplant.train$pe_est),pnorm,0,sd((powerplant.tra
 Analicemos ahora el conjunto de test
 
 ```{r}
-#| scrolled: false
 powerplant.test$pe_est<-predict(model_powerplant,powerplant.test)
 plot(powerplant.test$PE,(powerplant.test$PE-powerplant.test$pe_est))
 
@@ -656,7 +683,9 @@ influye mucho en la salida de la regresión lineal.
 
 Se calcula mirando la diferencia entre el modelo completo con todas las muestras
 menos el modelo generado eliminando la muestra bajo estudio. La distancia de
-cook para la muestra $i$ se puede calcular como: $$
+cook para la muestra $i$ se puede calcular como: 
+
+$$
 D_i = \frac{\sum_{j=1}^N (\hat Y_j - \hat Y_{j(i)})^2}{(p+1)·\hat \sigma ^2}
 $$
 
@@ -734,7 +763,7 @@ fino.
 
 Fuente: https://archive.ics.uci.edu/ml/datasets/Concrete+Compressive+Strength
 
-**Características de los datos:**      La resistencia a la compresión real del
+**Características de los datos:** La resistencia a la compresión real del
 hormigón (MPa) para una mezcla dada bajo un la edad específica (días) se
 determinó a partir del laboratorio. Los datos están en forma cruda (no a
 escala).
